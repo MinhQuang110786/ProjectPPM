@@ -1,13 +1,14 @@
-import React, {Component} from 'react'
-import PropTypes from "prop-types";
-import {connect} from "react-redux";
-import {createProject} from "../../actions/ProjectAction"
+import React, {Component} from 'react';
 import classnames from "classname";
-class AddProject extends Component {
-
+import {getProject} from "../../actions/ProjectAction";
+import {updateProject} from "../../actions/ProjectAction";
+import {connect} from "react-redux";
+import PropTypes from "prop-types";
+class UpdateProject extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            id:"",
             projectName: "",
             projectIdentifier: "",
             description: "",
@@ -19,19 +20,14 @@ class AddProject extends Component {
         this.onSubmit = this.onSubmit.bind(this);
     }
 
-    componentWillReceiveProps(nextProps,nextContent) {
-        if (nextProps.errors) {
-            this.setState({errors: nextProps.errors});
-        }
-    }
-
     onChange = (e) => {
         this.setState({[e.target.name]: e.target.value})
     }
 
     onSubmit = (e) => {
         e.preventDefault();
-        const newProject = {
+        const updateProject = {
+            id: this.state.id,
             projectName: this.state.projectName,
             projectIdentifier: this.state.projectIdentifier,
             description: this.state.description,
@@ -39,20 +35,34 @@ class AddProject extends Component {
             endDate: this.state.endDate
         }
 
-        this.props.createProject(newProject, this.props.history);
+        this.props.updateProject(this.state.projectIdentifier,updateProject, this.props.history);
 
+    }
+
+    componentWillReceiveProps(nextProps,nextContent) {
+        if(nextProps.errors){
+            this.setState({errors:nextProps.errors});
+        }
+        const {id,projectName,projectIdentifier,description,startDate,endDate} = nextProps.project;
+        this.setState({
+            id,projectName,projectIdentifier,description,startDate,endDate
+        })
+    }
+
+    componentDidMount() {
+        const {id} = this.props.match.params;
+        this.props.getProject(id,this.props.history);
     }
 
     render() {
         const {errors} = this.state;
         return (
-
             <div className="register">
 
                 <div className="container">
                     <div className="row">
                         <div className="col-md-8 m-auto">
-                            <h5 className="display-4 text-center">Create / Edit Project form</h5>
+                            <h5 className="display-4 text-center">Update Project Form</h5>
                             <hr/>
                             <form onSubmit={this.onSubmit}>
                                 <div className="form-group">
@@ -66,31 +76,28 @@ class AddProject extends Component {
                                         <div className="invalid-feedback">{errors.projectName}
                                         </div>
                                     )}
+
                                 </div>
                                 <div className="form-group">
                                     <input type="text"
-                                           className={classnames("form-control form-control-lg",{
-                                               "is-invalid":errors.projectIdentifier
-                                           })}
-                                           placeholder="Unique Project ID" name="projectIdentifier"
+                                           className="form-control form-control-lg"
+                                           placeholder="Unique Project ID" name="projectIdentifier" disabled
                                            value={this.state.projectIdentifier} onChange={this.onChange}/>
-                                    {errors.projectIdentifier && (
-                                        <div className="invalid-feedback">{errors.projectIdentifier}
-                                        </div>
-                                    )}
+
                                 </div>
 
                                 <div className="form-group">
                                     <textarea
-                                            className={classnames("form-control form-control-lg",{
-                                                "is-invalid":errors.description
-                                            })}
-                                              placeholder="Project Description" name="description"
-                                              value={this.state.description} onChange={this.onChange}/>
+                                        className={classnames("form-control form-control-lg",{
+                                            "is-invalid":errors.description
+                                        })}
+                                        placeholder="Project Description" name="description"
+                                        value={this.state.description} onChange={this.onChange}/>
                                     {errors.description && (
                                         <div className="invalid-feedback">{errors.description}
                                         </div>
                                     )}
+
                                 </div>
                                 <h6>Start Date</h6>
                                 <div className="form-group">
@@ -108,15 +115,20 @@ class AddProject extends Component {
                     </div>
                 </div>
             </div>
-
-        )
+        );
     }
 }
 
-AddProject.propTypes = {
-    createProject: PropTypes.func.isRequired,
-    errors: PropTypes.object.isRequired
+UpdateProject.propTypes = {
+    getProject: PropTypes.func.isRequired,
+    updateProject: PropTypes.func.isRequired,
+    project:PropTypes.object.isRequired,
+    errors:PropTypes.object.isRequired
 }
 
-const mapStateToProps = state => ({errors: state.errors})
-export default connect(mapStateToProps, {createProject})(AddProject);
+const mapStateToProps = state =>({
+    project:state.project.project,
+    errors:state.errors
+})
+
+export default connect(mapStateToProps,{getProject,updateProject})(UpdateProject)

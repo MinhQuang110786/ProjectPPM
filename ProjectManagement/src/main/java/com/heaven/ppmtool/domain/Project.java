@@ -1,6 +1,7 @@
 package com.heaven.ppmtool.domain;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,7 +15,6 @@ import java.util.Date;
 @NoArgsConstructor
 @Getter
 @Setter
-
 public class Project {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,6 +32,7 @@ public class Project {
     private String description;
 
     @JsonFormat(pattern="yyyy-mm-dd")
+    @Column(updatable = false)
     private Date startDate;
     @JsonFormat(pattern="yyyy-mm-dd")
     private Date endDate;
@@ -39,6 +40,9 @@ public class Project {
     private Date created_At;
     @JsonFormat(pattern="yyyy-mm-dd")
     private Date update_At;
+    @OneToOne(fetch = FetchType.EAGER,cascade = CascadeType.ALL,mappedBy = "project")
+    @JsonIgnore
+    private Backlog backlog;
 
     @PrePersist
     protected void onCreate(){

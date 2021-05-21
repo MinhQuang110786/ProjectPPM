@@ -1,6 +1,7 @@
 package com.heaven.ppmtool.web;
 
 import com.heaven.ppmtool.domain.Project;
+import com.heaven.ppmtool.exception.ProjectIdException;
 import com.heaven.ppmtool.services.MapValidationErrorService;
 import com.heaven.ppmtool.services.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/api/project")
+@CrossOrigin(origins = "*")
 public class ProjectController {
     @Autowired
     private ProjectService projectService;
@@ -31,6 +33,7 @@ public class ProjectController {
     @GetMapping("/{projectId}")
     public ResponseEntity<?> getProjectById(@PathVariable("projectId") String projectId){
         Project project = projectService.findProjectByIdentifier(projectId);
+
         return new ResponseEntity<>(project,HttpStatus.OK);
     }
 
@@ -46,7 +49,10 @@ public class ProjectController {
     }
 
     @PutMapping("/{projectId}")
-    public ResponseEntity<?> updateProject(@PathVariable String projectId,@RequestBody Project project){
+    public ResponseEntity<?> updateProject(@PathVariable String projectId,@Valid@RequestBody Project editproject,BindingResult result){
+        if(result.hasErrors())
+            return errorService.MapValidationService(result);
+        Project project = projectService.updateProject(projectId,editproject);
         return new ResponseEntity<>(projectService.updateProject(projectId,project),HttpStatus.OK);
     }
 }
